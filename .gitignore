@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 quiz.json
+back_up.json
 
 # C extensions
 *.so

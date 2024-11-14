@@ -9,6 +9,9 @@ class Question:
     
     @staticmethod
     def return_questions_as_list(json: any) -> list:
+        """
+        Return a list of Question objects from a JSON formated file.
+        """
         results = []
         if json == "":
             return results
@@ -19,12 +22,3 @@ class Question:
     
     def __str__(self) -> str:
         return f"Question : {self.title} ; Réponses possibles : {self.answers} ; Bonne réponse : {self.correct_answer}"
-    
-
-if __name__ == "__main__":
-    questions = [
-        Question("title 1", [1, 2, 3, 4], 1),
-        Question("title 2", [5, 6, 7, 8], 2),
-        Question("title 3", [9, 10, 11, 12], 3),
-    ]
-    jh.write_dataset(questions)

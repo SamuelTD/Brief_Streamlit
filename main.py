@@ -3,48 +3,89 @@ import pandas as pd
 import numpy as np
 import json_handler as jh
 from question import Question
+from general_func import reset_state, generate_navigation_menu
+from string import ascii_uppercase
 
-#RESET QUIZ STATE
-st.session_state.good_answers = 0
-st.session_state.bad_answers = 0
-st.session_state.question_index = 0
+def get_questions_from_input() -> None:
+    st.session_state.answers = st.session_state.input_answers.split("\n")
+
+#Reset the game state.
+reset_state()
 st.session_state.question_list = []
-st.session_state.next_question = True
-st.session_state.reset_radio = True
-st.session_state.quiz_state = 0
 
+#Create the Question list for current quiz if none exists.
 if not "current_question_list" in st.session_state:
     st.session_state.current_question_list = []
+    st.session_state.reset_input_fields = False
 
-title = st.text_input("Question")
-answers = st.text_area("Answers")
-correct_answers = st.text_input("Correct answer")
+#Display the navigation sidebar
+generate_navigation_menu()
 
-st.session_state.current_question = title
-st.session_state.answers = answers.split("\n")
-st.session_state.correct_answer = correct_answers
+#Reset the input fields when a question has been created or a quiz has been created and display a confirmation popup.
+if st.session_state.reset_input_fields :
+    st.session_state.current_question = ""
+    st.session_state.input_answers = ""
+    st.session_state.correct_answer = ""
+    st.session_state.reset_input_fields = False
+    st.toast(st.session_state.popup_message)
 
+#User text inputs for title, answer options and correct answer.
+st.subheader("Intitulé de la question :")
+st.text_input("", key="current_question", label_visibility="collapsed")
+st.subheader("Options de réponses (séparées par un retour à la ligne) : ")
+st.text_area("", key="input_answers", on_change=get_questions_from_input, label_visibility="collapsed")
+st.subheader("Numéro de la bonne réponse : ")
+st.text_input("", key="correct_answer", label_visibility="collapsed")
+
+#Display both buttons on the same row.
 column1, column2 = st.columns(2)
 
 with column1:
+    #Create a Question object based on current user inputs and add it the current list
     if st.button("Ajoutez ma question"):
+        #Check if all fields have been written in.
         if st.session_state.current_question != "" and \
-            st.session_state.answers != "" and \
+            st.session_state.input_answers != "" and \
                 st.session_state.correct_answer != "":
-            st.session_state.current_question_list.append(Question(st.session_state.current_question, st.session_state.answers, st.session_state.correct_answer))
-            st.write(f"Question ajoutée avec succès.\nIl y a {len(st.session_state.current_question_list)} questions dans le quiz.")
+            
+            
+            st.session_state.current_question_list.append(Question(st.session_state.current_question, st.session_state.answers, int(st.session_state.correct_answer)))
+            st.session_state.popup_message = f"Question ajoutée avec succès.\nIl y a {len(st.session_state.current_question_list)} questions dans le quiz."
+            st.session_state.reset_input_fields = True
+            st.rerun()
         else:    
             st.write("Invalide : Un ou plusieurs champs sont vides.")
         
 
-with column2:    
+with column2:   
+    #If there is at least one Question object in the list, write the list as JSON file. 
     if st.button("Créer le quiz"):
         if len(st.session_state.current_question_list) == 0:
             st.write("Il n'y a aucune question dans le quiz.")
         else:
             jh.write_dataset(st.session_state.current_question_list)
-            st.write(f"Le quiz a été créé avec {len(st.session_state.current_question_list)} questions !")
+            st.session_state.popup_message = f"Le quiz a été créé avec {len(st.session_state.current_question_list)} questions !"
             st.session_state.current_question_list = []
+            st.session_state.reset_input_fields = True
+            st.rerun()
+
+#Display all current questions in the Quiz with a button to delete them.
+if len(st.session_state.current_question_list) > 0:
+    with st.expander("Questions en cours de validation :"):
+            index = 0            
+            for item in st.session_state.current_question_list:
+                sub_index = 0
+                st.subheader(f"{index+1}°) {item.title}")
+                for q in item.answers:
+                    st.write(f"{ascii_uppercase[sub_index]}°) {q}")
+                    sub_index+=1
+                st.write(f":green[**Réponse : {item.answers[int(item.correct_answer)-1]}**]")
+                if st.button("Supprimer", key=f"q_{index}"):
+                    st.session_state.current_question_list.pop(index)  
+                    st.rerun()                  
+                if index < len(st.session_state.current_question_list)-1:
+                    st.divider()
+                index += 1
     
 
 
