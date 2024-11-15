@@ -5,6 +5,7 @@ import json_handler as jh
 from question import Question
 from general_func import reset_state, generate_navigation_menu
 from string import ascii_uppercase
+from pydantic import ValidationError
 
 def get_questions_from_input() -> None:
     st.session_state.answers = st.session_state.input_answers.split("\n")
@@ -41,27 +42,38 @@ st.text_input("", key="correct_answer", label_visibility="collapsed")
 column1, column2 = st.columns(2)
 
 with column1:
-    #Create a Question object based on current user inputs and add it the current list
+    #Create a Question object based on current user inputs and add it to the current list
     if st.button("Ajoutez ma question"):
         #Check if all fields have been written in.
         if st.session_state.current_question != "" and \
             st.session_state.input_answers != "" and \
-                st.session_state.correct_answer != "":
+                st.session_state.correct_answer != "":            
             
-            
-            st.session_state.current_question_list.append(Question(st.session_state.current_question, st.session_state.answers, int(st.session_state.correct_answer)))
-            st.session_state.popup_message = f"Question ajoutée avec succès.\nIl y a {len(st.session_state.current_question_list)} questions dans le quiz."
-            st.session_state.reset_input_fields = True
-            st.rerun()
+            #Validate the parsed datas
+            try :      
+                # new_question = Question.model_validate({'title':st.session_state.current_question, 'answers': st.session_state.answers, 'correct_answer':st.session_state.correct_answer})     
+                new_question = Question(title= st.session_state.current_question, answers= st.session_state.answers, correct_answer =st.session_state.correct_answer)     
+                
+                #Check if fielded answer index is within possible range.
+                if (new_question.correct_answer > len(new_question.answers)):
+                    st.write(f":red[La bonne réponse ne se situe pas dans le spectre des réponses possibles.]") 
+                else:   
+                    st.session_state.current_question_list.append(new_question)
+                    st.session_state.popup_message = f"Question ajoutée avec succès.\nIl y a {len(st.session_state.current_question_list)} questions dans le quiz."
+                    st.session_state.reset_input_fields = True
+                    st.rerun()
+            except ValidationError as e:      
+                st.error(f":red[{e.errors()[0]["msg"].replace("Value error, ", "")}]")     
+        
         else:    
-            st.write("Invalide : Un ou plusieurs champs sont vides.")
+            st.error(":red[Invalide : Un ou plusieurs champs sont vides.]")
         
 
 with column2:   
     #If there is at least one Question object in the list, write the list as JSON file. 
     if st.button("Créer le quiz"):
         if len(st.session_state.current_question_list) == 0:
-            st.write("Il n'y a aucune question dans le quiz.")
+            st.error(":red[Ajoutez au moins une question pour créer le quiz.]")
         else:
             jh.write_dataset(st.session_state.current_question_list)
             st.session_state.popup_message = f"Le quiz a été créé avec {len(st.session_state.current_question_list)} questions !"

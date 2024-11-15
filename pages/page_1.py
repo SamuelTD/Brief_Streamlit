@@ -3,19 +3,6 @@ from question import Question
 import json_handler as jh
 from general_func import reset_state, generate_navigation_menu
 from random import shuffle
-
-
-# import asyncio
-
-# async def test(label: any) -> None:
-#     count = int(st.session_state.param_timer_difficulty[:-1])
-#     st.session_state.current_question_timed_out = False
-#     while count > 0:
-#         count -= 1
-#         label.markdown(f"Chronomètre : {count}")
-#         await asyncio.sleep(1)
-#     st.session_state.current_question_timed_out = True
-#     st.session_state.param_timer = True
         
 
 #Display the navigation side bar.
@@ -28,18 +15,16 @@ if not "question_list" in st.session_state or st.session_state.question_list == 
 
 #Setting screen
 if st.session_state.quiz_state == -1:
-    st.session_state.test_bool = False
     st.header("Choisissez les paramètres de votre partie :", divider="blue")
+    
     st.checkbox("Ordre aléatoire des questions", key="param_random_order")   
     st.checkbox("Seuil maximal de questions", key="param_maximum")
     if st.session_state.param_maximum:
         st.slider("Max", 1, 100, 1, 1, key="param_maximum_slider")
-    st.checkbox("Questions chronométrées", key="param_timer")
-    if st.session_state.param_timer:
-        st.radio("Difficulté ⏳", ["5s", "15s", "30s"], key="param_timer_difficulty", index=0, horizontal=True)
     
     if st.button("Commencer"):
         if st.session_state.param_random_order :
+            print("yes")
             shuffle(st.session_state.question_list)
         if st.session_state.param_maximum:
             while len(st.session_state.question_list) > st.session_state.param_maximum_slider:
@@ -134,27 +119,10 @@ if st.session_state.quiz_state == 1:
     with col2:
         if st.button("Recommencer"):
             reset_state()
+            st.session_state.question_list = []
             st.rerun()
 
-# if st.session_state.param_timer and st.session_state.quiz_state == 0:
-#         test_async = st.empty()
-#         asyncio.run(test(test_async))
-#         if st.session_state.current_question_timed_out:
-            
-#             st.session_state.user_answers.append(-1)
-#             st.session_state.bad_answers += 1
-#             st.session_state.question_index += 1
-            
-#             st.session_state.popup_message = "TIMED OUT"
-            
-#             #If there are no more questions in current quiz, step to end of game state.
-#             if st.session_state.question_index >= len(st.session_state.question_list):
-#                 st.session_state.quiz_state = 1
-#             #Else reset the radio buttons for the next question.
-#             else:
-#                 st.session_state.reset_radio = True
-                
-#             st.rerun()
+
 
 
 

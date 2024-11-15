@@ -5,6 +5,7 @@ __pycache__/
 
 quiz.json
 back_up.json
+test.py
 
 # C extensions
 *.so

@@ -6,6 +6,12 @@ def generate_navigation_menu() -> None:
     """
     Display the navigation sidebar.
     """
+    # st.set_page_config(
+    #     page_title="Mon Quiz",
+    #     layout="wide",
+    #     initial_sidebar_state="expanded",
+    #     )
+    
     with st.sidebar:
         st.subheader("Navigation")
         st.page_link("main.py", label="Créer un quiz", icon="🛠️")

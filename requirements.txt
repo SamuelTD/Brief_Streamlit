@@ -1,0 +1,2 @@
+pydantic=v2.9.2
+streamlit=1.40.1
