@@ -88,6 +88,7 @@ if st.session_state.quiz_state == 1:
             st.subheader(":rainbow[Parfait !] 🏆")
             st.image("images/lepers_ouioui.gif")
             st.audio("sounds/lepers_ouioui.mp3", autoplay=True)
+            st.balloons()
         elif percent_answer >= 75:
             st.subheader("Excellent! 🥇")   
             st.image("images/lepers_3points.gif")
